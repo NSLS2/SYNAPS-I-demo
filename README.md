@@ -20,11 +20,7 @@
 This repository will provide a configurable skeleton that our partners at ALS
 can quickly plug their AI segmentation backend into.
 
-1. A container that subscribes to a (configurable) Tiled node, listening for
-   updates over WebSockets and schedules a (configurable) Prefect Flow to run
-   when an update is received. It should pass the URL to the dataset of
-   interest as a parameter to the Flow.
-2. A script that, given that URL, downloads the data.
-2. A script that, given segmentation results (as a directory of TIFF files)
-   uploads those results into a (configurable) Tiled node.
-
+Specifically: a container that subscribes to a (configurable) Tiled node, listening for
+updates over WebSockets and schedules a (configurable) Prefect Flow to run
+when an update is received. It should pass the URL to the dataset of
+interest as a parameter to the Flow.
