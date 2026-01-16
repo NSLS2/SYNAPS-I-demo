@@ -1,0 +1,10 @@
+[workspace]
+channels = ["conda-forge"]
+name = "Beamline workflow"
+platforms = ["linux-64"]
+
+[dependencies]
+prefect = "3.*"
+python = "<3.14"
+tiled-client = ">=0.2.3"
+prefect-docker = "*"
