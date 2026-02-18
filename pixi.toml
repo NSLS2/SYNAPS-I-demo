@@ -1,10 +1,27 @@
 [workspace]
+authors = ["skarakuzu <karakuzu.seher@gmail.com>"]
 channels = ["conda-forge"]
-name = "Beamline workflow"
+name = "test_mlflow"
 platforms = ["linux-64"]
+version = "0.1.0"
+
+
+[tasks]
+jupyter = { cmd = "jupyter lab" }
+
+[feature.jupyter.activation]
+scripts = ["env.sh"]
+
+[environments]
+jupyter = ["jupyter"]
+
 
 [dependencies]
-prefect = "3.*"
-python = "<3.12"
-tiled-client = ">=0.2.3"
-prefect-docker = "*"
+ipykernel = ">=6.29.5,<7"
+python = ">3.6, <3.10"
+mlflow = ">=3.1.4,<4"
+tifffile = ">=2024.6.18,<2025"
+python-dotenv = ">=1.1.1,<2"
+
+[pypi-dependencies]
+dlsia = ">=0.3.4, <0.4"
