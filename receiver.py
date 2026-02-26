@@ -5,6 +5,8 @@ from tiled.client import from_uri
 import time
 import pandas
 from concurrent.futures import ThreadPoolExecutor
+from utils import *
+
 
 URI_IN = os.getenv("URI_IN", "https://tiled.nsls2.bnl.gov/api/v1/metadata/tst/sandbox/synaps/reconstructions")
 URI_OUT = os.getenv("URI_OUT", "https://tiled.nsls2.bnl.gov/api/v1/metadata/tst/sandbox/synaps/segmentations")
@@ -20,10 +22,10 @@ def segmentation_function(data, metadata):
     #TODO insert here the inference call
     # output is the output of segmentation
     # structured as {"box_number": [x0, x1, y0, y1]}
-    output = {"1": [0, 10, 0, 100]}
-    writer_client.write_table(output)
+    output =  analyze_data_from_arrays(data, metadata)
+    writer_client.write_table(output, metadata)
 
-def on_new_dataset(update: LiveChildCreated):
+def on_new_dataset(update):
     "This runs when *metadata* is updated and a new dataset is created."
     print(f"New array detected: {update}")
     path_parts = tuple(update.subscription.segments)  # e.g. ('tst', 'sandbox', ...)
@@ -33,7 +35,7 @@ def on_new_dataset(update: LiveChildCreated):
     sub.start_in_thread(start=1)
     
 
-def on_the_new_segmentation(update: LiveArrayData):
+def on_the_new_segmentation(update):
     "This runs when data has been uploaded for a dataset."
     # Run a segmentation on the data.
     data = update.data()  # Extract the numpy array from the update.
