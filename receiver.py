@@ -22,37 +22,40 @@ def segmentation_function(data, metadata):
     #TODO insert here the inference call
     # output is the output of segmentation
     # structured as {"box_number": [x0, x1, y0, y1]}
+    print("Doing segmentation....")
     output =  analyze_data_from_arrays(data, metadata)
+    print("Writing segmentation to tiled....")
     writer_client.write_table(output, metadata)
 
 def on_new_dataset(update):
     "This runs when *metadata* is updated and a new dataset is created."
-    print(f"New array detected: {update}")
+    print(f"New array detected : {update}")
     path_parts = tuple(update.subscription.segments)  # e.g. ('tst', 'sandbox', ...)
     METADATA_UPDATES[path_parts] = update
     sub = update.child().subscribe()
-    sub.new_data.add_callback(on_the_new_segmentation)
-    sub.start_in_thread(start=1)
+    sub.child_created.add_callback(run_segmentation)
+    sub.start_in_thread(max_size=100_000_000_000)
     
-
-def on_the_new_segmentation(update):
+def run_segmentation(update):
     "This runs when data has been uploaded for a dataset."
     # Run a segmentation on the data.
-    data = update.data()  # Extract the numpy array from the update.
-    # Look up the metadata which we should have already received.
+    print("New Data extracted...")
+    breakpoint()
+    data = update.child().read()  # Extract the numpy array from the update.
     path_parts = tuple(update.subscription.segments)  # e.g. ('tst', 'sandbox', ...)
-    update = METADATA_UPDATES.pop(path_parts)
-    metadata = update.metadata
+    update_parent = METADATA_UPDATES[path_parts[:-1]]
+    metadata = update_parent.metadata
     executor.submit(segmentation_function, data, metadata)    
+
+
 
 # To run the function:
 if __name__ == "__main__":
+    #client = from_uri('https://tiled.nsls2.bnl.gov')
+    #pt = client['tst/sandbox/synaps/reconstructions']
     pt = from_uri(URI_IN)
     sub = pt.subscribe()
     sub.child_created.add_callback(on_new_dataset)
     print("Listening for updates. Use Ctrl+C to stop....", flush=True)
     sub.start()  # block
-
-
-
 

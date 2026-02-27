@@ -5,8 +5,8 @@ from tiled.client import from_uri
 client = from_uri('https://tiled.nsls2.bnl.gov')
 pt = client['tst/sandbox/synaps/reconstructions']
 
-shape = (50, 50)  # array dimensions
-N = 1  # number of updates
+shape = (500, 500)  # array dimensions
+N = 5  # number of updates
 interval = 1  # delay between updates (seconds)
 
 arr = np.random.random(shape) + 1j * np.random.random(shape)
