@@ -19,5 +19,5 @@ cellpose = ">=4.0.8,<5"
 pims = ">=0.7, <0.8"
 doct = ">=1.1.0, <2"
 bluesky-tiled-plugins = ">=2.0.2, <3"
-#automap-hxn = { git = "https://github.com/genematx/X-AutoMap-HXN.git", branch="synaps-demo"}
-automap-hxn = { path = "../X-AutoMap-HXN", editable=true}
+automap-hxn = { git = "https://github.com/genematx/X-AutoMap-HXN.git", branch="synaps-demo"}
+#automap-hxn = { path = "../X-AutoMap-HXN", editable=true}
