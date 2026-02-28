@@ -40,9 +40,19 @@ from hxntools.CompositeBroker import db
 from bluesky_queueserver_api import BPlan
 from bluesky_queueserver_api.zmq import REManagerAPI
 RM = REManagerAPI()
-from tiled.client import from_uri
-c = from_uri('https://tiled.nsls2.bnl.gov')
-container = c["tst/sandbox/synaps/reconstructions"]
+
+
+
+
+
+
+
+
+
+
+# from tiled.client import from_uri
+# c = from_uri('https://tiled.nsls2.bnl.gov')
+# container = c["tst/sandbox/eugene/synaps/reconstructions"]
 
 # Suppress DataFrame fragmentation warnings from databroker
 warnings.filterwarnings('ignore', category=pd.errors.PerformanceWarning, message='.*DataFrame is highly fragmented.*')
@@ -404,8 +414,6 @@ def headless_send_queue_fine_scan(json_path, fine_scans_table=None):
             print(f"[{mode.upper()}] Would queue: {label} (cx={cx:.2f}, cy={cy:.2f})")
     
     print(f"[FINE_SCANS] ✅ All {len(fine_scans_table)} fine scans {'queued' if is_real else 'prepared'}")
-
-
 
 def create_rgb_tiff(tiff_paths, output_dir, element_list, group_name=None):
     """
@@ -2665,6 +2673,9 @@ def analyze_data_local(scan_id=None,
     return all_results
 
 
+
+
+##### This is used
 def analyze_data_from_arrays(element_arrays, params):
     """
     Analyze XRF data from a 3D numpy array instead of loading TIFF files.

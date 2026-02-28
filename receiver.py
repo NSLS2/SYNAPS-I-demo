@@ -5,11 +5,11 @@ from tiled.client import from_uri
 import time
 import pandas
 from concurrent.futures import ThreadPoolExecutor
-from utils import *
+from automap_hxn.utils import analyze_data_from_arrays
 
 
-URI_IN = os.getenv("URI_IN", "https://tiled.nsls2.bnl.gov/api/v1/metadata/tst/sandbox/synaps/reconstructions")
-URI_OUT = os.getenv("URI_OUT", "https://tiled.nsls2.bnl.gov/api/v1/metadata/tst/sandbox/synaps/segmentations")
+URI_IN = os.getenv("URI_IN", "https://tiled.nsls2.bnl.gov/api/v1/metadata/tst/sandbox/eugene/synaps/reconstructions")
+URI_OUT = os.getenv("URI_OUT", "https://tiled.nsls2.bnl.gov/api/v1/metadata/tst/sandbox/eugene/synaps/segmentations")
 
 # Cache metadata updates to match them with subsequent data updates.
 METADATA_UPDATES = {}
@@ -48,10 +48,9 @@ def run_segmentation(update):
     executor.submit(segmentation_function, data, metadata)    
 
 
-
 # To run the function:
 if __name__ == "__main__":
-    #client = from_uri('https://tiled.nsls2.bnl.gov')
+    # client = from_uri('https://tiled.nsls2.bnl.gov')
     #pt = client['tst/sandbox/synaps/reconstructions']
     pt = from_uri(URI_IN)
     sub = pt.subscribe()

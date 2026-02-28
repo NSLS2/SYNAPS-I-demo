@@ -3,7 +3,7 @@ import time
 from tiled.client import from_uri
 
 client = from_uri('https://tiled.nsls2.bnl.gov')
-pt = client['tst/sandbox/synaps/reconstructions']
+pt = client['tst/sandbox/eugene/synaps/reconstructions']
 
 shape = (500, 500)  # array dimensions
 N = 5  # number of updates
