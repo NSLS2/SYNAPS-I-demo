@@ -17,35 +17,54 @@ METADATA_UPDATES = {}
 SUBSCRIPTIONS = []
 
 writer_client = from_uri(URI_OUT)
-
 executor = ThreadPoolExecutor(max_workers=4)
 
-# def write_table_to_tiled(client, data: dict[str, pd.DataFrame], metadata):
-#     if not table := pyarrow.Table.from_pylist(data_cache)):
-#         return  # Nothing to write
-
-#     # Initialize the table and keep a reference to the client
-#     df_client = client.create_appendable_table(
-#         schema=schema,
-#         key="internal",
-#         metadata=metadata,
-#         access_tags=self.access_tags,
-#     )
-#     self._internal_tables[desc_name] = df_client
-
-
 def segmentation_function(data, metadata, path_parts):
+    """Run the segmentation algorithm on the new data and write the results back to Tiled.
+    
+    Args:
+        data: The numpy array data from the new Tiled array.
+        metadata: The metadata dictionary associated with the parent dataset.
+        path_parts: Tuple of (dataset_name, table_name) for writing results.
+    """
+
     #TODO insert here the inference call
     # output is the output of segmentation
-    # structured as {"box_number": [x0, x1, y0, y1]}
+    # structured as {"channel": ['label', 'cx', 'cy', 'num_x', 'num_y']}
     print("Running segmentation algorithm on new data...")
+    
     output = analyze_data_from_arrays(data, metadata)
+
+    # #### Uncomment for testing -- results from the local run
+    # output = {'Ni': pandas.DataFrame({
+    #     'label': ['Individual Blob Ni #1', 'Individual Blob Ni #2', 'Individual Blob Ni #3', 'Individual Blob Ni #4'],
+    #     'cx': [1.20064, 5.10064, -5.39936, 1.10064],
+    #     'cy': [-3.40246, 1.69754, 4.49754, 5.19754],
+    #     'num_x': [8.0, 8.6, 10.2, 7.0],
+    #     'num_y': [8.0, 8.6, 10.2, 7.0]}
+    #     ),
+    #     'Mn': pandas.DataFrame({
+    #         'label': ['Individual Blob Mn #1', 'Individual Blob Mn #2', 'Individual Blob Mn #3', 'Individual Blob Mn #4'],
+    #         'cx': [0.70064, 5.60064, -6.39936, -5.39936],
+    #         'cy': [-3.20246, 1.79754, 3.19754, 7.69754],
+    #         'num_x': [9.0, 8.8, 7.4, 6.2],
+    #         'num_y': [9.0, 8.8, 7.4, 6.2]}
+    #     ),
+    #     'NiCoMn': pandas.DataFrame({
+    #         'label': ['Union Box NiCoMn #1'],
+    #         'cx': [-0.19936],
+    #         'cy': [0.42254],
+    #         'num_x': [22.4],
+    #         'num_y': [22.65]}
+    #     )
+    # }
+
     n_boxes = sum(len(boxes) for boxes in output.values())
     print(f"Segmentation complete. Found {n_boxes} box{'es' if n_boxes != 1 else ''}.")
 
     # Write the output to Tiled
     if output:
-        dataset_name, table_name = path_parts
+        dataset_name, table_name = path_parts[-2:]
         try:
             container = writer_client[dataset_name]
         except KeyError:
@@ -53,17 +72,21 @@ def segmentation_function(data, metadata, path_parts):
                                                         access_tags=["tst_sandbox"])
         
         for channel, boxes in output.items():
-            if not (table := pyarrow.Table.from_pandas(boxes)):
-                continue
-            table_client = container.create_appendable_table(
-                schema=table.schema,
-                key=channel,
-                metadata=metadata,
-                access_tags=["tst_sandbox"],
-            )
-            table_client.append_partition(0, table)
+            try:
+                if not (table := pyarrow.Table.from_pandas(boxes)):
+                    continue
+                table_client = container.create_appendable_table(
+                    schema=table.schema,
+                    key=channel,
+                    metadata=metadata,
+                    access_tags=["tst_sandbox"],
+                )
+                table_client.append_partition(0, table)
+            except Exception as e:
+                print(f"Failed to write table for channel {channel}: {e}")
+                import traceback
+                traceback.print_exc()
 
-    # writer_client.write_table(output, metadata)
         print("Segmentation table written to Tiled.")
     
  
@@ -97,10 +120,8 @@ def run_segmentation(update: LiveArrayData):
 
 # To run the function:
 if __name__ == "__main__":
-    # client = from_uri('https://tiled.nsls2.bnl.gov')
-    #pt = client['tst/sandbox/synaps/reconstructions']
-    pt = from_uri(URI_IN)
-    sub = pt.subscribe()
+    client = from_uri(URI_IN)
+    sub = client.subscribe()
     sub.child_created.add_callback(on_new_dataset)
     print("Listening for updates. Use Ctrl+C to stop....", flush=True)
     sub.start()  # block
