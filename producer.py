@@ -2,6 +2,11 @@ from automap_hxn.loading import load_and_queue
 import argparse
 from tiled.client import from_uri
 
+import matplotlib
+matplotlib.use('Qt5Agg')  # This is the equivalent of %matplotlib qt
+import matplotlib.pyplot as plt
+plt.ion()
+
 if __name__ == "__main__":
     tiled_client = from_uri('https://tiled.nsls2.bnl.gov')
 

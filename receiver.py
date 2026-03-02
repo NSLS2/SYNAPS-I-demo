@@ -28,11 +28,8 @@ def segmentation_function(data, metadata, path_parts):
         path_parts: Tuple of (dataset_name, table_name) for writing results.
     """
 
-    #TODO insert here the inference call
-    # output is the output of segmentation
-    # structured as {"channel": ['label', 'cx', 'cy', 'num_x', 'num_y']}
+    #The output of segmentation isstructured as {"channel": ['label', 'cx', 'cy', 'num_x', 'num_y']}
     print("Running segmentation algorithm on new data...")
-    
     output = analyze_data_from_arrays(data, metadata)
 
     # #### Uncomment for testing -- results from the local run
@@ -64,7 +61,7 @@ def segmentation_function(data, metadata, path_parts):
 
     # Write the output to Tiled
     if output:
-        dataset_name, table_name = path_parts[-2:]
+        dataset_name, _ = path_parts[-2:]
         try:
             container = writer_client[dataset_name]
         except KeyError:
