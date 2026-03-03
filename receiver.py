@@ -29,7 +29,7 @@ def segmentation_function(data, metadata, path_parts):
     """
 
     #The output of segmentation isstructured as {"channel": ['label', 'cx', 'cy', 'num_x', 'num_y']}
-    print("Running segmentation algorithm on new data...")
+    print("⏳ Running segmentation algorithm on new data...")
     output = analyze_data_from_arrays(data, metadata)
 
     # #### Uncomment for testing -- results from the local run
@@ -56,17 +56,16 @@ def segmentation_function(data, metadata, path_parts):
     #     )
     # }
 
-    n_boxes = sum(len(boxes) for boxes in output.values())
-    print(f"Segmentation complete. Found {n_boxes} box{'es' if n_boxes != 1 else ''}.")
+    dataset_name, _ = path_parts[-2:]
+    try:
+        container = writer_client[dataset_name]
+    except KeyError:
+            container = writer_client.create_container(dataset_name, access_tags=["tst_sandbox"])
 
     # Write the output to Tiled
     if output:
-        dataset_name, _ = path_parts[-2:]
-        try:
-            container = writer_client[dataset_name]
-        except KeyError:
-             container = writer_client.create_container(dataset_name,
-                                                        access_tags=["tst_sandbox"])
+        n_boxes = sum(len(boxes) for boxes in output.values())
+        print(f"✅ Segmentation complete. Found {n_boxes} box{'es' if n_boxes != 1 else ''}.")
         
         for channel, boxes in output.items():
             try:
@@ -78,29 +77,35 @@ def segmentation_function(data, metadata, path_parts):
                     metadata=metadata,
                     access_tags=["tst_sandbox"],
                 )
+                time.sleep(0.5)
                 table_client.append_partition(0, table)
             except Exception as e:
-                print(f"Failed to write table for channel {channel}: {e}")
+                print(f"❌ Failed to write table for channel {channel}: {e}")
                 import traceback
                 traceback.print_exc()
+        print("   Segmentation table written to Tiled 🚀")
 
-        print("Segmentation table written to Tiled.")
-    
- 
+    else:
+        print("⚠️ Segmentation complete. No boxes found.")
+        container.write_table({}, key="empty", access_tags=["tst_sandbox"])  # Write an "empty" table to signal no tables will be coming
+        print("⚠️ Wrote 'empty' flag to Tiled to signal no tables expected.")
+
+
 def on_new_dataset(update: LiveChildCreated):
     "This runs when a new dataset is created in the root container."
     path_parts = tuple(update.subscription.segments) + (update.key,)
-    print(f"New dataset created: {'/'.join(path_parts)}")
+    print(f"\n✨ New dataset created: {'/'.join(path_parts[-3:])}")
+    print("   Subscribing to updates...")
     METADATA_UPDATES[path_parts] = update.metadata  # Cache the metadata for later use
     sub = update.child().subscribe()
     sub.child_created.add_callback(on_new_array)
-    sub.start_in_thread()
+    sub.start_in_thread(start=0)
     SUBSCRIPTIONS.append(sub)
 
 
 def on_new_array(update: LiveChildCreated):
     "This runs when a new array is created in the container; may not have any data yet!"
-    print(f"New array created: {update.key}. Waiting for data to be uploaded...")
+    print(f"   New array created: {update.key}. Waiting for data to be uploaded...")
     sub = update.child().subscribe()  # subscribe to the array to get data updates
     sub.new_data.add_callback(run_segmentation)
     sub.start_in_thread(start=0, max_size=100_000_000_000)  # large max_size for bigger images
@@ -120,6 +125,6 @@ if __name__ == "__main__":
     client = from_uri(URI_IN)
     sub = client.subscribe()
     sub.child_created.add_callback(on_new_dataset)
-    print("Listening for updates. Use Ctrl+C to stop....", flush=True)
+    print("📡 Listening for updates. Use Ctrl+C to stop....", flush=True)
     sub.start()  # block
 

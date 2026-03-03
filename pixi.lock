@@ -749,7 +749,7 @@ packages:
 - pypi: ../X-AutoMap-HXN
   name: automap-hxn
   version: 0.1.0
-  sha256: d3397281105833edb2347612d64c7d66f732cc6cd3837f554ac98f6efa45eb9a
+  sha256: 945d2f6cc6e5a421f36238d07796f7701ac6c06d62d0cd03d2a3280fddf9e00e
   requires_dist:
   - ipython
   - jupyter>=1.1.1,<2
