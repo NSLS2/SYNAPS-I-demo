@@ -4,7 +4,7 @@
 #FROM ubuntu:22.04 AS ca
 #RUN apt-get update && apt-get install -y ca-certificates && rm -rf /var/lib/apt/lists/*
 
-FROM ghcr.io/prefix-dev/pixi:latest
+FROM ghcr.io/prefix-dev/pixi:0.83.0
 
 WORKDIR /app
 
